@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unit Converter</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;700;800&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0a0e13;
+      --surface: #111720;
+      --border:  #1e2a38;
+      --accent:  #38bdf8;
+      --pass:    #22c55e;
+      --text:    #e2e8f0;
+      --muted:   #4a6075;
+      --mono:    'JetBrains Mono', monospace;
+      --sans:    'Syne', sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    header {
+      padding: 32px 0 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+    }
+
+    .logo {
+      font-family: var(--sans);
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+
+    .logo span { color: var(--accent); }
+
+    .badge {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    main { padding: 32px 0; display: flex; flex-direction: column; gap: 12px; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+
+    .card:focus-within { border-color: var(--accent); }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .fn-name {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    .formula {
+      font-size: 11px;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    .card-body { display: flex; align-items: stretch; }
+
+    .input-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 8px;
+    }
+
+    .unit-label {
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+      min-width: 28px;
+    }
+
+    input[type="number"] {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: var(--mono);
+      font-size: 22px;
+      font-weight: 300;
+      color: var(--text);
+      padding: 14px 0;
+      width: 0;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+    .arrow {
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      color: var(--muted);
+      font-size: 16px;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      background: rgba(255,255,255,0.015);
+      user-select: none;
+    }
+
+    .output-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 8px;
+    }
+
+    .result {
+      flex: 1;
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--accent);
+      padding: 14px 0;
+      display: flex;
+      align-items: center;
+      transition: color 0.1s;
+    }
+
+    .result.empty { color: var(--muted); font-weight: 300; }
+
+    .divider { height: 1px; background: var(--border); margin: 8px 0; }
+
+    .log-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .log-header {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .log-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .log-count { margin-left: auto; font-size: 11px; color: var(--muted); }
+
+    .log-body {
+      padding: 12px 0;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    .log-body::-webkit-scrollbar { width: 4px; }
+    .log-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .log-entry {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 3px 16px;
+      font-size: 12px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; } }
+
+    .log-tick { font-size: 11px; width: 12px; flex-shrink: 0; color: var(--pass); }
+    .log-text { color: var(--muted); flex: 1; }
+    .log-val  { color: var(--text); }
+
+    footer {
+      padding: 20px 0;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pass); flex-shrink: 0; }
+
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: var(--accent);
+      margin-left: 3px;
+      vertical-align: text-bottom;
+      animation: blink 1s step-end infinite;
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <header>
+    <div class="logo">unit<span>.</span>converter</div>
+    <div class="badge">Class 9 · Testing Lab</div>
+  </header>
+
+  <main>
+
+    <div class="card" data-fn="celsiusToFahrenheit" data-in="°C" data-out="°F">
+      <div class="card-header">
+        <span class="fn-name">celsiusToFahrenheit</span>
+        <span class="formula">(c × 9/5) + 32</span>
+      </div>
+      <div class="card-body">
+        <div class="input-wrap">
+          <span class="unit-label">°C</span>
+          <input type="number" placeholder="0" step="any" />
+        </div>
+        <div class="arrow">→</div>
+        <div class="output-wrap">
+          <div class="result empty">—<span class="cursor"></span></div>
+          <span class="unit-label">°F</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-fn="kmToMiles" data-in="km" data-out="mi">
+      <div class="card-header">
+        <span class="fn-name">kmToMiles</span>
+        <span class="formula">km × 0.621371</span>
+      </div>
+      <div class="card-body">
+        <div class="input-wrap">
+          <span class="unit-label">km</span>
+          <input type="number" placeholder="0" step="any" />
+        </div>
+        <div class="arrow">→</div>
+        <div class="output-wrap">
+          <div class="result empty">—<span class="cursor"></span></div>
+          <span class="unit-label">mi</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-fn="kgToPounds" data-in="kg" data-out="lbs">
+      <div class="card-header">
+        <span class="fn-name">kgToPounds</span>
+        <span class="formula">kg × 2.20462</span>
+      </div>
+      <div class="card-body">
+        <div class="input-wrap">
+          <span class="unit-label">kg</span>
+          <input type="number" placeholder="0" step="any" />
+        </div>
+        <div class="arrow">→</div>
+        <div class="output-wrap">
+          <div class="result empty">—<span class="cursor"></span></div>
+          <span class="unit-label">lbs</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-fn="litersToGallons" data-in="L" data-out="gal">
+      <div class="card-header">
+        <span class="fn-name">litersToGallons</span>
+        <span class="formula">L × 0.264172</span>
+      </div>
+      <div class="card-body">
+        <div class="input-wrap">
+          <span class="unit-label">L</span>
+          <input type="number" placeholder="0" step="any" />
+        </div>
+        <div class="arrow">→</div>
+        <div class="output-wrap">
+          <div class="result empty">—<span class="cursor"></span></div>
+          <span class="unit-label">gal</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="log-wrap">
+      <div class="log-header">
+        <span class="log-title">Conversion Log</span>
+        <span class="log-count" id="log-count">0 entries</span>
+      </div>
+      <div class="log-body" id="log-body"></div>
+    </div>
+
+  </main>
+
+  <footer>
+    <div class="dot"></div>
+    powered by converter-shared.js — same file the tests use
+  </footer>
+
+</div>
+
+<!-- The shared functions — same file Jest loads via require('./converter-shared') -->
+<script src="converter-shared.js"></script>
+<script>
+  const FNS = { celsiusToFahrenheit, kmToMiles, kgToPounds, litersToGallons };
+
+  const logBody  = document.getElementById('log-body');
+  const logCount = document.getElementById('log-count');
+  let entries = 0;
+
+  function addLog(fnName, input, output, inUnit, outUnit) {
+    entries++;
+    logCount.textContent = `${entries} entr${entries === 1 ? 'y' : 'ies'}`;
+    const row = document.createElement('div');
+    row.className = 'log-entry';
+    row.innerHTML = `
+      <span class="log-tick">✓</span>
+      <span class="log-text">${fnName}(${input}${inUnit})</span>
+      <span class="log-val">${output} ${outUnit}</span>
+    `;
+    logBody.prepend(row);
+  }
+
+  document.querySelectorAll('.card').forEach(card => {
+    const fn      = card.dataset.fn;
+    const inUnit  = card.dataset.in;
+    const outUnit = card.dataset.out;
+    const input   = card.querySelector('input');
+    const result  = card.querySelector('.result');
+
+    input.addEventListener('input', () => {
+      const raw = input.value.trim();
+
+      if (raw === '') {
+        result.innerHTML = '—<span class="cursor"></span>';
+        result.classList.add('empty');
+        return;
+      }
+
+      const num = parseFloat(raw);
+      if (isNaN(num)) {
+        result.textContent = 'error';
+        result.classList.add('empty');
+        return;
+      }
+
+      const out = FNS[fn](num);
+      result.textContent = out;
+      result.classList.remove('empty');
+      addLog(fn, num, out, inUnit, outUnit);
+    });
+  });
+</script>
+</body>
+</html>

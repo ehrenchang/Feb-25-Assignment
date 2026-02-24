@@ -1,0 +1,11 @@
+{
+  "name": "unit-converter-tests",
+  "version": "1.0.0",
+  "description": "Intro to Code for MBAs — Class 9 Testing Lab",
+  "scripts": {
+    "test": "jest --watchAll=false --verbose"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
